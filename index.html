@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <title>여기있짤</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="brand" id="brandBtn" aria-label="전체 사진 보기">
+        <span class="brand-text">여기있짤</span>
+      </button>
+      <div class="header-actions">
+        <button class="btn primary admin-only" id="uploadBtn">업로드</button>
+        <button class="btn" id="adminBtn">관리자</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="toolbar panel">
+      <nav class="tabs" aria-label="사진 보기">
+        <button class="tab active" data-view="all">전체</button>
+        <button class="tab" data-view="hot">HOT</button>
+        <button class="tab" data-view="folders">폴더</button>
+        <button class="tab" data-view="favorites">즐겨찾기</button>
+        <button class="tab" data-view="settings">설정</button>
+      </nav>
+      <label class="search-wrap">
+        <span class="sr-only">검색</span>
+        <input id="searchInput" type="search" placeholder="이름 · 메모 · 태그 검색" autocomplete="off" />
+      </label>
+    </section>
+
+    <section class="subnav panel" id="subnav">
+      <button class="chip active" data-folder-filter="all">전체</button>
+      <button class="chip" data-folder-filter="uncategorized">미분류</button>
+      <button class="chip" id="trashBtn">휴지통</button>
+      <button class="chip" id="statsBtn">통계</button>
+      <button class="chip admin-only" id="folderManageBtn">폴더 관리</button>
+    </section>
+
+    <section class="selection-bar panel hidden" id="selectionBar">
+      <strong><span id="selectedCount">0</span>장 선택</strong>
+      <div class="selection-actions">
+        <button class="btn small" id="selectAllBtn">전체 선택</button>
+        <button class="btn small admin-only" id="bulkMoveBtn">폴더 이동</button>
+        <button class="btn small admin-only" id="bulkFavBtn">즐겨찾기</button>
+        <button class="btn small" id="bulkZipBtn">ZIP 다운로드</button>
+        <button class="btn small danger admin-only" id="bulkDeleteBtn">삭제</button>
+        <button class="btn small" id="cancelSelectBtn">취소</button>
+      </div>
+    </section>
+
+    <section id="content"></section>
+  </main>
+
+  <dialog id="adminDialog" class="modal">
+    <form method="dialog" class="modal-card" id="adminForm">
+      <div class="modal-head">
+        <div>
+          <h2>관리자 로그인</h2>
+          <p>업로드 · 수정 · 삭제는 관리자만 할 수 있습니다.</p>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="닫기">×</button>
+      </div>
+      <label>아이디<input id="adminId" required autocomplete="username" /></label>
+      <label>비밀번호<input id="adminPw" type="password" required autocomplete="current-password" /></label>
+      <p class="form-error hidden" id="adminError">아이디 또는 비밀번호가 맞지 않습니다.</p>
+      <div class="modal-actions">
+        <button class="btn" value="cancel">취소</button>
+        <button class="btn primary" type="submit" value="default">로그인</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="uploadDialog" class="modal wide">
+    <form method="dialog" class="modal-card" id="uploadForm">
+      <div class="modal-head">
+        <div>
+          <h2>사진 업로드</h2>
+          <p>여러 장을 한 번에 올릴 수 있습니다.</p>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="닫기">×</button>
+      </div>
+
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <strong>여기로 사진을 끌어다 놓으세요</strong>
+        <span>또는 아래 버튼으로 사진을 고르세요</span>
+        <button class="btn" type="button" id="pickFilesBtn">사진 더 고르기</button>
+        <input id="fileInput" type="file" accept="image/*" multiple hidden />
+      </div>
+
+      <div class="upload-summary"><strong id="uploadCount">0장</strong></div>
+      <div id="uploadPreview" class="upload-preview"></div>
+
+      <div class="form-grid">
+        <label>폴더<select id="uploadFolder"></select></label>
+        <label>공통 태그<input id="uploadTags" placeholder="쉼표로 구분" /></label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" value="cancel">취소</button>
+        <button class="btn primary" type="submit" value="default" id="doUploadBtn">업로드</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="viewerDialog" class="modal viewer-modal">
+    <div class="viewer-card">
+      <button class="icon-btn viewer-close" id="viewerCloseBtn" aria-label="닫기">×</button>
+      <button class="viewer-nav prev" id="viewerPrevBtn" aria-label="이전">‹</button>
+      <div class="viewer-stage"><img id="viewerImage" alt="사진 보기" /></div>
+      <button class="viewer-nav next" id="viewerNextBtn" aria-label="다음">›</button>
+      <div class="viewer-info">
+        <div>
+          <h2 id="viewerName">사진 보기</h2>
+          <p id="viewerMeta"></p>
+        </div>
+        <div class="viewer-actions">
+          <button class="btn small" id="downloadBtn">다운로드</button>
+          <button class="btn small admin-only" id="rotateBtn">회전</button>
+          <button class="btn small admin-only" id="editBtn">수정</button>
+          <button class="btn small danger admin-only" id="deleteBtn">삭제</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="editDialog" class="modal">
+    <form method="dialog" class="modal-card" id="editForm">
+      <div class="modal-head"><h2>사진 수정</h2><button class="icon-btn" value="cancel" aria-label="닫기">×</button></div>
+      <label>이름<input id="editName" required /></label>
+      <label>메모<textarea id="editMemo" rows="4"></textarea></label>
+      <label>태그<input id="editTags" placeholder="쉼표로 구분" /></label>
+      <label>폴더<select id="editFolder"></select></label>
+      <div class="modal-actions"><button class="btn" value="cancel">취소</button><button class="btn primary" type="submit" value="default">저장</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="folderDialog" class="modal">
+    <div class="modal-card">
+      <div class="modal-head"><div><h2>폴더 관리</h2><p>폴더 생성, 이름 변경, 삭제</p></div><button class="icon-btn" id="folderDialogClose" aria-label="닫기">×</button></div>
+      <div class="inline-form"><input id="newFolderName" placeholder="새 폴더 이름" /><button class="btn primary" id="createFolderBtn">폴더 만들기</button></div>
+      <div id="folderList" class="folder-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="folderPickDialog" class="modal">
+    <form method="dialog" class="modal-card" id="folderPickForm">
+      <div class="modal-head"><h2>폴더 선택</h2><button class="icon-btn" value="cancel" aria-label="닫기">×</button></div>
+      <label>폴더<select id="folderPickSelect"></select></label>
+      <div class="modal-actions"><button class="btn" value="cancel">취소</button><button class="btn primary" type="submit" value="default">적용</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="modal">
+    <form method="dialog" class="modal-card compact" id="confirmForm">
+      <div class="modal-head"><h2>확인</h2></div>
+      <p id="confirmText"></p>
+      <div class="modal-actions"><button class="btn" value="cancel">취소</button><button class="btn danger" id="confirmOk" type="submit" value="default">확인</button></div>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>
